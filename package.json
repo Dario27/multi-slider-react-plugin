@@ -15,7 +15,7 @@
     "slider",
     "block"
   ],
-  "author": "",
+  "author": "Steven Chilan",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.23.0",
