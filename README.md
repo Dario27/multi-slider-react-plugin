@@ -49,10 +49,54 @@ npm run dev
 
 ### 4. Instalar en WordPress
 
+Hay dos formas de instalar el plugin:
+
+#### Opción A: Instalación directa (FTP/SSH)
+
 1. Copia la carpeta completa del plugin a `wp-content/plugins/`
 2. Ve al panel de administración de WordPress
 3. Navega a Plugins → Plugins instalados
 4. Activa "Multi Slider React"
+
+#### Opción B: Instalación mediante ZIP (Recomendado)
+
+1. **Crear el archivo ZIP:**
+
+   Desde la carpeta raíz del proyecto, ejecuta:
+
+   ```bash
+   # Crear ZIP excluyendo archivos innecesarios
+   zip -r multi-slider-react-plugin.zip . \
+     -x "node_modules/*" \
+     -x ".git/*" \
+     -x "*.log" \
+     -x ".DS_Store"
+   ```
+
+   O en Windows (PowerShell):
+
+   ```powershell
+   Compress-Archive -Path * -DestinationPath multi-slider-react-plugin.zip -Force -Exclude node_modules,.git
+   ```
+
+   O manualmente:
+   - Selecciona todos los archivos EXCEPTO `node_modules/` y `.git/`
+   - Haz clic derecho → Comprimir/Enviar a → Carpeta comprimida
+   - Nombra el archivo: `multi-slider-react-plugin.zip`
+
+2. **Instalar desde WordPress:**
+
+   - Ve al panel de administración de WordPress
+   - Navega a **Plugins → Añadir nuevo**
+   - Haz clic en **Subir plugin**
+   - Haz clic en **Seleccionar archivo**
+   - Selecciona el archivo `multi-slider-react-plugin.zip`
+   - Haz clic en **Instalar ahora**
+   - Una vez instalado, haz clic en **Activar plugin**
+
+3. **¡Listo!** El plugin ya está activo y disponible en el editor de bloques.
+
+**Nota importante:** El archivo ZIP debe contener la carpeta `build/` con los archivos compilados. Si descargaste el código desde GitHub, estos archivos ya están incluidos.
 
 ## Uso
 
