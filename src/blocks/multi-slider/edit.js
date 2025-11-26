@@ -1,6 +1,6 @@
 import { Component } from '@wordpress/element';
 import { InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, Button, TextControl, Modal } from '@wordpress/components';
+import { PanelBody, Button, TextControl, Modal, ColorPalette } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import IconPicker from './IconPicker';
 
@@ -90,6 +90,23 @@ class Edit extends Component {
                 <InspectorControls>
                     <PanelBody title={__('Configuración del Slider', 'multi-slider-react')}>
                         <p>{__('Usa el panel principal para añadir items', 'multi-slider-react')}</p>
+                    </PanelBody>
+                    <PanelBody title={__('Color Principal', 'multi-slider-react')} initialOpen={true}>
+                        <p>{__('Selecciona el color principal para el slider', 'multi-slider-react')}</p>
+                        <ColorPalette
+                            colors={[
+                                { name: 'Naranja', color: '#ff6b35' },
+                                { name: 'Azul', color: '#3498db' },
+                                { name: 'Verde', color: '#2ecc71' },
+                                { name: 'Rojo', color: '#e74c3c' },
+                                { name: 'Morado', color: '#9b59b6' },
+                                { name: 'Amarillo', color: '#f39c12' },
+                                { name: 'Rosa', color: '#e91e63' },
+                                { name: 'Cian', color: '#00bcd4' },
+                            ]}
+                            value={attributes.primaryColor}
+                            onChange={(color) => this.props.setAttributes({ primaryColor: color })}
+                        />
                     </PanelBody>
                 </InspectorControls>
 

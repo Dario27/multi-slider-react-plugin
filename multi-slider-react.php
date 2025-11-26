@@ -66,6 +66,10 @@ function multi_slider_register_block() {
             'items' => array(
                 'type' => 'array',
                 'default' => array()
+            ),
+            'primaryColor' => array(
+                'type' => 'string',
+                'default' => '#ff6b35'
             )
         )
     ));
@@ -77,6 +81,9 @@ add_action('init', 'multi_slider_register_block');
  */
 function multi_slider_render_block($attributes) {
     $items = isset($attributes['items']) ? $attributes['items'] : array();
+    $primary_color = isset($attributes['primaryColor']) ? $attributes['primaryColor'] : '#ff6b35';
+    $total_items = count($items);
+    $show_dots = $total_items > 6;
 
     if (empty($items)) {
         return '';
@@ -85,9 +92,36 @@ function multi_slider_render_block($attributes) {
     // Enqueue Font Awesome for frontend
     wp_enqueue_style('font-awesome');
 
+    // Generate unique ID for this slider instance
+    $slider_id = 'multi-slider-' . uniqid();
+
     ob_start();
     ?>
-    <div class="multi-slider-container">
+    <style>
+        #<?php echo $slider_id; ?> .multi-slider-icon-wrapper {
+            color: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-link:hover .multi-slider-icon-wrapper {
+            background: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-item-title {
+            color: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-nav {
+            color: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-nav:hover:not(:disabled) {
+            background: <?php echo esc_attr($primary_color); ?>;
+            border-color: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-dot:hover {
+            background: <?php echo esc_attr($primary_color); ?>;
+        }
+        #<?php echo $slider_id; ?> .multi-slider-dot.active {
+            background: <?php echo esc_attr($primary_color); ?>;
+        }
+    </style>
+    <div id="<?php echo $slider_id; ?>" class="multi-slider-container">
         <h2 class="multi-slider-title">Nuestras Categorías</h2>
         <div class="multi-slider-wrapper">
             <button class="multi-slider-nav multi-slider-nav-prev" aria-label="Previous">
@@ -111,16 +145,18 @@ function multi_slider_render_block($attributes) {
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
+        <?php if ($show_dots) : ?>
         <div class="multi-slider-dots"></div>
+        <?php endif; ?>
     </div>
     <script>
     (function() {
-        const sliderContainer = document.querySelector('.multi-slider-track-container');
-        const sliderTrack = document.querySelector('.multi-slider-track');
-        const prevBtn = document.querySelector('.multi-slider-nav-prev');
-        const nextBtn = document.querySelector('.multi-slider-nav-next');
-        const dotsContainer = document.querySelector('.multi-slider-dots');
-        const items = document.querySelectorAll('.multi-slider-item');
+        const sliderContainer = document.querySelector('#<?php echo $slider_id; ?> .multi-slider-track-container');
+        const sliderTrack = document.querySelector('#<?php echo $slider_id; ?> .multi-slider-track');
+        const prevBtn = document.querySelector('#<?php echo $slider_id; ?> .multi-slider-nav-prev');
+        const nextBtn = document.querySelector('#<?php echo $slider_id; ?> .multi-slider-nav-next');
+        const dotsContainer = document.querySelector('#<?php echo $slider_id; ?> .multi-slider-dots');
+        const items = document.querySelectorAll('#<?php echo $slider_id; ?> .multi-slider-item');
 
         let currentIndex = 0;
         let itemsPerView = getItemsPerView();
@@ -134,6 +170,7 @@ function multi_slider_render_block($attributes) {
         }
 
         function createDots() {
+            if (!dotsContainer) return;
             dotsContainer.innerHTML = '';
             for (let i = 0; i < totalPages; i++) {
                 const dot = document.createElement('span');
@@ -145,7 +182,8 @@ function multi_slider_render_block($attributes) {
         }
 
         function updateDots() {
-            const dots = document.querySelectorAll('.multi-slider-dot');
+            if (!dotsContainer) return;
+            const dots = document.querySelectorAll('#<?php echo $slider_id; ?> .multi-slider-dot');
             dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
             });
