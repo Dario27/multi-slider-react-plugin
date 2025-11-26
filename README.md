@@ -1,0 +1,1 @@
+# multi-slider-react-plugin
