@@ -106,6 +106,7 @@ function multi_slider_render_block($attributes)
         }
         #<?php echo $slider_id; ?> .multi-slider-link:hover .multi-slider-icon-wrapper {
             background: <?php echo esc_attr($primary_color); ?>;
+            color: white;
         }
         #<?php echo $slider_id; ?> .multi-slider-item-title {
             color: <?php echo esc_attr($primary_color); ?>;
@@ -116,6 +117,7 @@ function multi_slider_render_block($attributes)
         #<?php echo $slider_id; ?> .multi-slider-nav:hover:not(:disabled) {
             background: <?php echo esc_attr($primary_color); ?>;
             border-color: <?php echo esc_attr($primary_color); ?>;
+            color: white;
         }
         #<?php echo $slider_id; ?> .multi-slider-dot:hover {
             background: <?php echo esc_attr($primary_color); ?>;
