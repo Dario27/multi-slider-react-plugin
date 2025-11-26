@@ -4,7 +4,7 @@
  * Plugin Name: Multi Slider React
  * Plugin URI: https://github.com/Dario27/multi-slider-react-plugin
  * Description: Interactive multi-slider block for WordPress Gutenberg with React
- * Version: 1.0.3
+ * Version: 1.1.0
  * Author: Steven Chilan Bito
  * License: MIT
  * Text Domain: multi-slider-react
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('MULTI_SLIDER_VERSION', '1.0.3');
+define('MULTI_SLIDER_VERSION', '1.1.0');
 define('MULTI_SLIDER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MULTI_SLIDER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -129,9 +129,11 @@ function multi_slider_render_block($attributes)
     <div id="<?php echo $slider_id; ?>" class="multi-slider-container">
         <h2 class="multi-slider-title">Nuestras Categorías</h2>
         <div class="multi-slider-wrapper">
+            <?php if ($show_dots) : ?>
             <button class="multi-slider-nav multi-slider-nav-prev" aria-label="Previous">
                 <i class="fas fa-chevron-left"></i>
             </button>
+            <?php endif; ?>
             <div class="multi-slider-track-container">
                 <div class="multi-slider-track">
                     <?php foreach ($items as $item) : ?>
@@ -146,9 +148,11 @@ function multi_slider_render_block($attributes)
                     <?php endforeach; ?>
                 </div>
             </div>
+            <?php if ($show_dots) : ?>
             <button class="multi-slider-nav multi-slider-nav-next" aria-label="Next">
                 <i class="fas fa-chevron-right"></i>
             </button>
+            <?php endif; ?>
         </div>
         <?php if ($show_dots) : ?>
         <div class="multi-slider-dots"></div>
@@ -201,8 +205,10 @@ function multi_slider_render_block($attributes)
             sliderTrack.style.transform = `translateX(${offset}px)`;
             updateDots();
 
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex >= totalPages - 1;
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= totalPages - 1;
+            }
         }
 
         function goToPage(index) {
@@ -210,19 +216,23 @@ function multi_slider_render_block($attributes)
             updateSlider();
         }
 
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSlider();
-            }
-        });
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateSlider();
+                }
+            });
+        }
 
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < totalPages - 1) {
-                currentIndex++;
-                updateSlider();
-            }
-        });
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < totalPages - 1) {
+                    currentIndex++;
+                    updateSlider();
+                }
+            });
+        }
 
         window.addEventListener('resize', () => {
             const newItemsPerView = getItemsPerView();
