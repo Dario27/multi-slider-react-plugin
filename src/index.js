@@ -12,6 +12,10 @@ registerBlockType('multi-slider/slider-block', {
         items: {
             type: 'array',
             default: []
+        },
+        primaryColor: {
+            type: 'string',
+            default: '#ff6b35'
         }
     },
     edit: Edit,
