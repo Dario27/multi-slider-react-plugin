@@ -4,7 +4,7 @@
  * Plugin Name: Multi Slider React
  * Plugin URI: https://github.com/Dario27/multi-slider-react-plugin
  * Description: Interactive multi-slider block for WordPress Gutenberg with React
- * Version: 1.0.6
+ * Version: 1.0.7
  * Requires at least: WordPress 5.0 o superior
  * Requires PHP: 7.4 o superior
  * Author: Steven Chilan Bito
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('MULTI_SLIDER_VERSION', '1.0.6');
+define('MULTI_SLIDER_VERSION', '1.0.7');
 define('MULTI_SLIDER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MULTI_SLIDER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
