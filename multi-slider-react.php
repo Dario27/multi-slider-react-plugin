@@ -108,6 +108,7 @@ function multi_slider_render_block($attributes)
         }
         #<?php echo $slider_id; ?> .multi-slider-link:hover .multi-slider-icon-wrapper {
             background: <?php echo esc_attr($primary_color); ?>;
+            color: white;
         }
         #<?php echo $slider_id; ?> .multi-slider-item-title {
             color: <?php echo esc_attr($primary_color); ?>;
@@ -118,6 +119,7 @@ function multi_slider_render_block($attributes)
         #<?php echo $slider_id; ?> .multi-slider-nav:hover:not(:disabled) {
             background: <?php echo esc_attr($primary_color); ?>;
             border-color: <?php echo esc_attr($primary_color); ?>;
+            color: white;
         }
         #<?php echo $slider_id; ?> .multi-slider-dot:hover {
             background: <?php echo esc_attr($primary_color); ?>;
@@ -184,6 +186,7 @@ function multi_slider_render_block($attributes)
                 dot.addEventListener('click', () => goToPage(i));
                 dotsContainer.appendChild(dot);
             }
+        }
 
         function updateDots() {
             if (!dotsContainer) return;
@@ -193,56 +196,49 @@ function multi_slider_render_block($attributes)
             });
         }
 
-            function updateDots() {
-                const dots = document.querySelectorAll('.multi-slider-dot');
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentIndex);
-                });
-            }
+        function updateSlider() {
+            const itemWidth = items[0].offsetWidth;
+            const gap = 20;
+            const offset = -(currentIndex * itemsPerView * (itemWidth + gap));
+            sliderTrack.style.transform = `translateX(${offset}px)`;
+            updateDots();
 
-            function updateSlider() {
-                const itemWidth = items[0].offsetWidth;
-                const gap = 20;
-                const offset = -(currentIndex * itemsPerView * (itemWidth + gap));
-                sliderTrack.style.transform = `translateX(${offset}px)`;
-                updateDots();
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= totalPages - 1;
+        }
 
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= totalPages - 1;
-            }
+        function goToPage(index) {
+            currentIndex = Math.max(0, Math.min(index, totalPages - 1));
+            updateSlider();
+        }
 
-            function goToPage(index) {
-                currentIndex = Math.max(0, Math.min(index, totalPages - 1));
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
                 updateSlider();
             }
+        });
 
-            prevBtn.addEventListener('click', () => {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updateSlider();
-                }
-            });
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < totalPages - 1) {
+                currentIndex++;
+                updateSlider();
+            }
+        });
 
-            nextBtn.addEventListener('click', () => {
-                if (currentIndex < totalPages - 1) {
-                    currentIndex++;
-                    updateSlider();
-                }
-            });
+        window.addEventListener('resize', () => {
+            const newItemsPerView = getItemsPerView();
+            if (newItemsPerView !== itemsPerView) {
+                itemsPerView = newItemsPerView;
+                currentIndex = 0;
+                createDots();
+                updateSlider();
+            }
+        });
 
-            window.addEventListener('resize', () => {
-                const newItemsPerView = getItemsPerView();
-                if (newItemsPerView !== itemsPerView) {
-                    itemsPerView = newItemsPerView;
-                    currentIndex = 0;
-                    createDots();
-                    updateSlider();
-                }
-            });
-
-            createDots();
-            updateSlider();
-        })();
+        createDots();
+        updateSlider();
+    })();
     </script>
 <?php
     return ob_get_clean();
