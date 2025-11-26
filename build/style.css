@@ -52,8 +52,8 @@
 }
 
 .multi-slider-icon-wrapper {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     background: #f5f5f5;
     border-radius: 50%;
     display: flex;
@@ -253,6 +253,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -273,4 +274,3 @@
 .multi-slider-link:focus-visible {
     outline: none;
 }
-

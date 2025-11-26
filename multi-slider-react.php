@@ -1,10 +1,11 @@
 <?php
+
 /**
  * Plugin Name: Multi Slider React
  * Plugin URI: https://github.com/Dario27/multi-slider-react-plugin
  * Description: Interactive multi-slider block for WordPress Gutenberg with React
- * Version: 1.0.0
- * Author: Your Name
+ * Version: 1.0.3
+ * Author: Steven Chilan Bito
  * License: MIT
  * Text Domain: multi-slider-react
  */
@@ -15,14 +16,15 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('MULTI_SLIDER_VERSION', '1.0.0');
+define('MULTI_SLIDER_VERSION', '1.0.3');
 define('MULTI_SLIDER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MULTI_SLIDER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 /**
  * Register the block
  */
-function multi_slider_register_block() {
+function multi_slider_register_block()
+{
     // Register block editor script
     wp_register_script(
         'multi-slider-block-editor',
@@ -79,7 +81,8 @@ add_action('init', 'multi_slider_register_block');
 /**
  * Render callback for the block
  */
-function multi_slider_render_block($attributes) {
+function multi_slider_render_block($attributes)
+{
     $items = isset($attributes['items']) ? $attributes['items'] : array();
     $primary_color = isset($attributes['primaryColor']) ? $attributes['primaryColor'] : '#ff6b35';
     $total_items = count($items);
@@ -179,7 +182,6 @@ function multi_slider_render_block($attributes) {
                 dot.addEventListener('click', () => goToPage(i));
                 dotsContainer.appendChild(dot);
             }
-        }
 
         function updateDots() {
             if (!dotsContainer) return;
@@ -189,58 +191,66 @@ function multi_slider_render_block($attributes) {
             });
         }
 
-        function updateSlider() {
-            const itemWidth = items[0].offsetWidth;
-            const gap = 20;
-            const offset = -(currentIndex * itemsPerView * (itemWidth + gap));
-            sliderTrack.style.transform = `translateX(${offset}px)`;
-            updateDots();
+            function updateDots() {
+                const dots = document.querySelectorAll('.multi-slider-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
 
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex >= totalPages - 1;
-        }
+            function updateSlider() {
+                const itemWidth = items[0].offsetWidth;
+                const gap = 20;
+                const offset = -(currentIndex * itemsPerView * (itemWidth + gap));
+                sliderTrack.style.transform = `translateX(${offset}px)`;
+                updateDots();
 
-        function goToPage(index) {
-            currentIndex = Math.max(0, Math.min(index, totalPages - 1));
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= totalPages - 1;
+            }
+
+            function goToPage(index) {
+                currentIndex = Math.max(0, Math.min(index, totalPages - 1));
+                updateSlider();
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateSlider();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < totalPages - 1) {
+                    currentIndex++;
+                    updateSlider();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                const newItemsPerView = getItemsPerView();
+                if (newItemsPerView !== itemsPerView) {
+                    itemsPerView = newItemsPerView;
+                    currentIndex = 0;
+                    createDots();
+                    updateSlider();
+                }
+            });
+
+            createDots();
             updateSlider();
-        }
-
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSlider();
-            }
-        });
-
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < totalPages - 1) {
-                currentIndex++;
-                updateSlider();
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            const newItemsPerView = getItemsPerView();
-            if (newItemsPerView !== itemsPerView) {
-                itemsPerView = newItemsPerView;
-                currentIndex = 0;
-                createDots();
-                updateSlider();
-            }
-        });
-
-        createDots();
-        updateSlider();
-    })();
+        })();
     </script>
-    <?php
+<?php
     return ob_get_clean();
 }
 
 /**
  * Enqueue Font Awesome in admin
  */
-function multi_slider_enqueue_admin_assets() {
+function multi_slider_enqueue_admin_assets()
+{
     wp_enqueue_style('font-awesome');
 }
 add_action('enqueue_block_editor_assets', 'multi_slider_enqueue_admin_assets');
