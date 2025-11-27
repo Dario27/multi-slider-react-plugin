@@ -88,17 +88,21 @@ function multi_slider_render_block($attributes)
     $items = isset($attributes['items']) ? $attributes['items'] : array();
     $primary_color = isset($attributes['primaryColor']) ? $attributes['primaryColor'] : '#ff6b35';
     $total_items = count($items);
-    $show_dots = $total_items > 6;
+    $show_navigation_desktop = $total_items > 6; // Flechas en desktop solo si >6
 
     if (empty($items)) {
         return '';
     }
 
-    // Enqueue Font Awesome for frontend
+    // Enqueue Font Awesome for frontend (solo para iconos de categorías)
     wp_enqueue_style('font-awesome');
 
     // Generate unique ID for this slider instance
     $slider_id = 'multi-slider-' . uniqid();
+
+    // SVG para flechas (puedes personalizar estos SVGs)
+    $arrow_prev_svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+    $arrow_next_svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
 
     ob_start();
     ?>
@@ -116,6 +120,10 @@ function multi_slider_render_block($attributes)
         #<?php echo $slider_id; ?> .multi-slider-nav {
             color: <?php echo esc_attr($primary_color); ?>;
         }
+        #<?php echo $slider_id; ?> .multi-slider-nav svg {
+            width: 20px;
+            height: 20px;
+        }
         #<?php echo $slider_id; ?> .multi-slider-nav:hover:not(:disabled) {
             background: <?php echo esc_attr($primary_color); ?>;
             border-color: <?php echo esc_attr($primary_color); ?>;
@@ -127,15 +135,29 @@ function multi_slider_render_block($attributes)
         #<?php echo $slider_id; ?> .multi-slider-dot.active {
             background: <?php echo esc_attr($primary_color); ?>;
         }
+
+        /* Desktop: ocultar flechas si hay <=6 items */
+        <?php if (!$show_navigation_desktop) : ?>
+        @media (min-width: 1025px) {
+            #<?php echo $slider_id; ?> .multi-slider-nav {
+                display: none;
+            }
+        }
+        <?php endif; ?>
+
+        /* Responsive: siempre mostrar flechas */
+        @media (max-width: 1024px) {
+            #<?php echo $slider_id; ?> .multi-slider-nav {
+                display: flex !important;
+            }
+        }
     </style>
     <div id="<?php echo $slider_id; ?>" class="multi-slider-container">
         <h2 class="multi-slider-title">Nuestras Categorías</h2>
         <div class="multi-slider-wrapper">
-            <?php if ($show_dots) : ?>
             <button class="multi-slider-nav multi-slider-nav-prev" aria-label="Previous">
-                <i class="fas fa-chevron-left"></i>
+                <?php echo $arrow_prev_svg; ?>
             </button>
-            <?php endif; ?>
             <div class="multi-slider-track-container">
                 <div class="multi-slider-track">
                     <?php foreach ($items as $item) : ?>
@@ -150,15 +172,11 @@ function multi_slider_render_block($attributes)
                     <?php endforeach; ?>
                 </div>
             </div>
-            <?php if ($show_dots) : ?>
             <button class="multi-slider-nav multi-slider-nav-next" aria-label="Next">
-                <i class="fas fa-chevron-right"></i>
+                <?php echo $arrow_next_svg; ?>
             </button>
-            <?php endif; ?>
         </div>
-        <?php if ($show_dots) : ?>
         <div class="multi-slider-dots"></div>
-        <?php endif; ?>
     </div>
     <script>
     (function() {
@@ -172,7 +190,8 @@ function multi_slider_render_block($attributes)
         let currentIndex = 0;
         let itemsPerView = getItemsPerView();
         const totalItems = items.length;
-        const totalPages = Math.ceil(totalItems / itemsPerView);
+        let totalPages = Math.ceil(totalItems / itemsPerView);
+        let isResponsive = window.innerWidth < 1024;
 
         function getItemsPerView() {
             if (window.innerWidth < 768) return 2;
@@ -180,10 +199,34 @@ function multi_slider_render_block($attributes)
             return 6;
         }
 
+        function isResponsiveMode() {
+            return window.innerWidth < 1024;
+        }
+
+        function shouldShowDots() {
+            // Desktop: mostrar dots solo si >6 items
+            // Responsive: siempre mostrar dots
+            if (isResponsiveMode()) {
+                return true;
+            }
+            return totalItems > 6;
+        }
+
         function createDots() {
             if (!dotsContainer) return;
+
+            // Ocultar dots si no deben mostrarse
+            if (!shouldShowDots()) {
+                dotsContainer.style.display = 'none';
+                return;
+            }
+
+            dotsContainer.style.display = 'flex';
             dotsContainer.innerHTML = '';
-            for (let i = 0; i < totalPages; i++) {
+
+            const dotsCount = isResponsiveMode() ? totalItems : totalPages;
+
+            for (let i = 0; i < dotsCount; i++) {
                 const dot = document.createElement('span');
                 dot.classList.add('multi-slider-dot');
                 if (i === 0) dot.classList.add('active');
@@ -193,7 +236,7 @@ function multi_slider_render_block($attributes)
         }
 
         function updateDots() {
-            if (!dotsContainer) return;
+            if (!dotsContainer || !shouldShowDots()) return;
             const dots = document.querySelectorAll('#<?php echo $slider_id; ?> .multi-slider-dot');
             dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
@@ -203,18 +246,29 @@ function multi_slider_render_block($attributes)
         function updateSlider() {
             const itemWidth = items[0].offsetWidth;
             const gap = 20;
-            const offset = -(currentIndex * itemsPerView * (itemWidth + gap));
+
+            // En responsive: mover de 1 en 1 item
+            // En desktop: mover por páginas
+            let offset;
+            if (isResponsiveMode()) {
+                offset = -(currentIndex * (itemWidth + gap));
+            } else {
+                offset = -(currentIndex * itemsPerView * (itemWidth + gap));
+            }
+
             sliderTrack.style.transform = `translateX(${offset}px)`;
             updateDots();
 
             if (prevBtn && nextBtn) {
+                const maxIndex = isResponsiveMode() ? totalItems - itemsPerView : totalPages - 1;
                 prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= totalPages - 1;
+                nextBtn.disabled = currentIndex >= maxIndex;
             }
         }
 
         function goToPage(index) {
-            currentIndex = Math.max(0, Math.min(index, totalPages - 1));
+            const maxIndex = isResponsiveMode() ? totalItems - itemsPerView : totalPages - 1;
+            currentIndex = Math.max(0, Math.min(index, maxIndex));
             updateSlider();
         }
 
@@ -229,7 +283,8 @@ function multi_slider_render_block($attributes)
 
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
-                if (currentIndex < totalPages - 1) {
+                const maxIndex = isResponsiveMode() ? totalItems - itemsPerView : totalPages - 1;
+                if (currentIndex < maxIndex) {
                     currentIndex++;
                     updateSlider();
                 }
@@ -238,8 +293,12 @@ function multi_slider_render_block($attributes)
 
         window.addEventListener('resize', () => {
             const newItemsPerView = getItemsPerView();
-            if (newItemsPerView !== itemsPerView) {
+            const wasResponsive = isResponsive;
+            isResponsive = isResponsiveMode();
+
+            if (newItemsPerView !== itemsPerView || wasResponsive !== isResponsive) {
                 itemsPerView = newItemsPerView;
+                totalPages = Math.ceil(totalItems / itemsPerView);
                 currentIndex = 0;
                 createDots();
                 updateSlider();
