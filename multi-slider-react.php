@@ -4,7 +4,7 @@
  * Plugin Name: Multi Slider React
  * Plugin URI: https://github.com/Dario27/multi-slider-react-plugin
  * Description: Interactive multi-slider block for WordPress Gutenberg with React
- * Version: 1.1.0
+ * Version: 1.2.3
  * Requires at least: WordPress 5.0 o superior
  * Requires PHP: 7.4 o superior
  * Author: Steven Chilan Bito
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('MULTI_SLIDER_VERSION', '1.1.0');
+define('MULTI_SLIDER_VERSION', '1.2.3');
 define('MULTI_SLIDER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MULTI_SLIDER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -303,6 +303,112 @@ function multi_slider_render_block($attributes)
                 createDots();
                 updateSlider();
             }
+        });
+
+        // Touch and Mouse Drag Functionality
+        let isDragging = false;
+        let startPos = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let animationID = 0;
+        let startTime = 0;
+        let velocity = 0;
+
+        // Deshabilitar selección de texto durante drag
+        sliderTrack.style.userSelect = 'none';
+        sliderTrack.style.cursor = 'grab';
+
+        // Touch Events (Mobile/Tablet)
+        sliderTrack.addEventListener('touchstart', touchStart);
+        sliderTrack.addEventListener('touchmove', touchMove);
+        sliderTrack.addEventListener('touchend', touchEnd);
+
+        // Mouse Events (Desktop)
+        sliderTrack.addEventListener('mousedown', touchStart);
+        sliderTrack.addEventListener('mousemove', touchMove);
+        sliderTrack.addEventListener('mouseup', touchEnd);
+        sliderTrack.addEventListener('mouseleave', touchEnd);
+
+        function touchStart(event) {
+            isDragging = true;
+            startTime = Date.now();
+            startPos = getPositionX(event);
+            animationID = requestAnimationFrame(animation);
+            sliderTrack.style.cursor = 'grabbing';
+            sliderTrack.style.transition = 'none';
+        }
+
+        function touchMove(event) {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                const diff = currentPosition - startPos;
+                currentTranslate = prevTranslate + diff;
+
+                // Calcular velocidad para momentum
+                const currentTime = Date.now();
+                const timeDiff = currentTime - startTime;
+                if (timeDiff > 0) {
+                    velocity = diff / timeDiff;
+                }
+            }
+        }
+
+        function touchEnd() {
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+            sliderTrack.style.cursor = 'grab';
+            sliderTrack.style.transition = 'transform 0.4s ease-in-out';
+
+            const movedBy = currentTranslate - prevTranslate;
+            const itemWidth = items[0].offsetWidth;
+            const gap = 20;
+            const slideWidth = itemWidth + gap;
+
+            // Determinar dirección y cantidad de movimiento
+            // Si el movimiento es significativo (>50px), cambiar de slide
+            if (Math.abs(movedBy) > 50) {
+                if (movedBy < 0) {
+                    // Deslizar a la derecha (siguiente)
+                    const maxIndex = isResponsiveMode() ? totalItems - itemsPerView : totalPages - 1;
+                    if (currentIndex < maxIndex) {
+                        currentIndex++;
+                    }
+                } else {
+                    // Deslizar a la izquierda (anterior)
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                    }
+                }
+            }
+
+            // Actualizar posición
+            updateSlider();
+
+            // Actualizar prevTranslate para el próximo drag
+            const offset = isResponsiveMode()
+                ? -(currentIndex * slideWidth)
+                : -(currentIndex * itemsPerView * slideWidth);
+            prevTranslate = offset;
+            currentTranslate = offset;
+        }
+
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        }
+
+        function animation() {
+            if (isDragging) {
+                sliderTrack.style.transform = `translateX(${currentTranslate}px)`;
+                requestAnimationFrame(animation);
+            }
+        }
+
+        // Prevenir comportamiento de arrastre de imágenes
+        items.forEach(item => {
+            const images = item.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('dragstart', (e) => e.preventDefault());
+            });
         });
 
         createDots();
