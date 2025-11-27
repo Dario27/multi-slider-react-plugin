@@ -95,11 +95,11 @@
     flex-shrink: 0;
 }
 
-.multi-slider-nav:hover:not(:disabled) {
+/*.multi-slider-nav:hover:not(:disabled) {
     background: #ff6b35;
     color: white;
     border-color: #ff6b35;
-}
+}*/
 
 .multi-slider-nav:disabled {
     opacity: 0.3;
